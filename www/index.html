@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#1E3A5F" />
+  <title>RxSleuth</title>
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Google Fonts — larger, warmer, more readable -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ── APP SHELL ── -->
+  <div id="app">
+
+    <!-- HEADER -->
+    <header id="appHeader" class="app-header">
+      <div class="header-left">
+        <span class="app-logo">Rx<span class="logo-accent">Sleuth</span></span>
+      </div>
+      <div class="header-right">
+        <span id="freeCounterBadge" class="free-counter hidden"></span>
+        <button id="upgradeBtn" class="btn-upgrade hidden">Upgrade →</button>
+        <button id="headerSettingsBtn" class="header-icon-btn">⚙️</button>
+      </div>
+    </header>
+
+    <!-- FREE TIER PROGRESS BAR -->
+    <div id="freeProgressWrap" class="free-progress-wrap hidden">
+      <div class="free-progress-label">
+        <span id="freeProgressText">5 medications remaining on free plan</span>
+        <span id="freeProgressCount"></span>
+      </div>
+      <div class="free-progress-track">
+        <div id="freeProgressBar" class="free-progress-bar"></div>
+      </div>
+    </div>
+<!-- MAIN CONTENT AREA -->
+    <main id="mainContent" class="main-content">
+
+      <!-- ── SCREEN: AUTH ── -->
+      <div id="authScreen" class="screen">
+        <div class="auth-wrap">
+          <div class="auth-logo">
+            <span class="auth-logo-text">Rx<span class="logo-accent">Sleuth</span></span>
+            <p class="auth-tagline">Walk into every appointment prepared.</p>
+          </div>
+          <div class="auth-card">
+            <div class="field-group">
+              <label class="field-label">Email</label>
+              <input type="email" class="field-input" id="authEmail" placeholder="you@example.com" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">Password</label>
+              <div style="position:relative;">
+                <input type="password" class="field-input" id="authPassword" placeholder="••••••••" style="width:100%;padding-right:40px;" />
+                <button type="button" id="togglePassword" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;color:#64748B;" aria-label="Toggle password visibility">
+                  <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div id="authError" class="auth-error hidden"></div>
+            <div style="display:flex;gap:10px;margin-bottom:16px;">
+              <button class="btn-primary" style="flex:1;" id="signInEmailBtn">Sign in</button>
+              <button class="btn-secondary" style="flex:1;" id="signUpEmailBtn">Sign up</button>
+            </div>
+            <div class="auth-divider">or</div>
+            <button class="btn-google" id="signInGoogleBtn">
+              <svg width="18" height="18" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M23.745 12.27c0-.79-.07-1.54-.19-2.27h-11.3v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"/>
+                <path fill="#34A853" d="M12.255 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96h-3.98v3.09C3.515 21.3 7.615 24 12.255 24z"/>
+                <path fill="#FBBC05" d="M5.525 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62h-3.98a11.86 11.86 0 0 0 0 10.76l3.98-3.09z"/>
+                <path fill="#EA4335" d="M12.255 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C18.205 1.19 15.495 0 12.255 0c-4.64 0-8.74 2.7-10.71 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z"/>
+              </svg>
+              Continue with Google
+            </button>
+            <p class="auth-privacy">🔒 Your health data is never sold or shared.</p>
+          </div>
+        </div>
+      </div>
+<!-- ── SCREEN: MAIN APP ── -->
+      <div id="appScreen" class="screen hidden">
+
+        <!-- TODAY TAB -->
+        <div id="tabToday" class="tab-content">
+          <div class="today-date" id="todayDate"></div>
+
+          <!-- QUICK ACTIONS -->
+          <div class="quick-actions">
+            <button class="quick-action-btn" id="quickLogMedBtn">
+              <span class="quick-action-icon">💊</span>
+              <span class="quick-action-label">Log Medication</span>
+            </button>
+            <button class="quick-action-btn" id="quickLogSymptomBtn">
+              <span class="quick-action-icon">📝</span>
+              <span class="quick-action-label">Log Symptom</span>
+            </button>
+            <button class="quick-action-btn" id="quickLogVitalsBtn">
+              <span class="quick-action-icon">❤️</span>
+              <span class="quick-action-label">Log Vitals</span>
+            </button>
+            <button class="quick-action-btn" id="quickDoctorReportBtn">
+              <span class="quick-action-icon">📋</span>
+              <span class="quick-action-label">Doctor Report</span>
+            </button>
+          </div>
+
+          <!-- TODAY'S SUMMARY -->
+          <div class="section-card">
+            <div class="section-card-header">
+              <span class="section-card-title">Today's Medications</span>
+              <button class="btn-text" id="viewAllMedsBtn">View all →</button>
+            </div>
+            <div id="todayMedsList" class="today-meds-list">
+              <p class="empty-state">No medications logged yet. Add your first medication above.</p>
+            </div>
+          </div>
+
+          <div
+<div class="section-card">
+            <div class="section-card-header">
+              <span class="section-card-title">Today's Symptoms</span>
+              <button class="btn-text" id="viewAllSymptomsBtn">View all →</button>
+            </div>
+            <div id="todaySymptomsList" class="today-symptoms-list">
+              <p class="empty-state">No symptoms logged today.</p>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-card-header">
+              <span class="section-card-title">Today's Vitals</span>
+              <button class="btn-text" id="viewAllVitalsBtn">View all →</button>
+            </div>
+            <div id="todayVitalsList" class="today-vitals-list">
+              <p class="empty-state">No vitals logged today.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- MEDICATIONS TAB -->
+        <div id="tabMedications" class="tab-content hidden">
+          <div class="tab-header">
+            <h2 class="tab-title">My Medications</h2>
+            <button class="btn-primary" id="addMedBtn">+ Add</button>
+          </div>
+          <div id="medicationsList" class="medications-list">
+            <p class="empty-state">No medications added yet.</p>
+          </div>
+        </div>
+
+        <!-- HISTORY TAB -->
+        <div id="tabHistory" class="tab-content hidden">
+          <div class="tab-header">
+            <h2 class="tab-title">History</h2>
+          </div>
+          <div class="history-filters">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="medications">Medications</button>
+            <button class="filter-btn" data-filter="symptoms">Symptoms</button>
+            <button class="filter-btn" data-filter="vitals">Vitals</button>
+          </div>
+          <div id="historyList" class="history-list">
+            <p class="empty-state">No history yet.</p>
+          </div>
+        </div>
+
+        <!-- DOCTOR TAB -->
+        <div id="tabDoctor" class="tab-content hidden">
+          <div class="tab-header">
+            <h2 class="tab-title">Doctor</h2>
+            <button class="btn-primary" id="addDoctorBtn">+ Add</button>
+          </div>
+          <div class="section-card">
+            <div class="section-card-header">
+              <span class="section-card-title">Upcoming Appointments</span>
+              <button class="btn-text" id="addAppointmentBtn">+ Add</button>
+            </div>
+            <div id="appointmentsList" class="appointments-list">
+              <p class="empty-state">No upcoming appointments.</p>
+            </div>
+          </div>
+          <div class="section-card">
+            <div class="section-card-header">
+              <span class="section-card-title">My Doctors</span>
+            </div>
+            <div id="doctorsList" class="doctors-list">
+              <p class="empty-state">No doctors added yet.</p>
+            </div>
+          </div>
+          <div class="section-card">
+            <div class="section-card-header">
+              <span class="section-card-title">AI Doctor Report</span>
+            </div>
+            <p class="section-card-desc">Generate a smart summary of your health data to share with your doctor.</p>
+            <button class="btn-primary" id="generateReportBtn" style="width:100%;">Generate Report 📋</button>
+          </div>
+        </div>
+
+        <!-- ACCOUNT TAB -->
+        <div id="tabAccount" class="tab-content hidden">
+
+          <!-- SIGNED OUT -->
+          <div id="accountSignedOut">
+            <div class="section-card">
+              <div class="plan-badge free">Free Plan</div>
+              <p class="account-desc">Sign in to sync your data across devices and unlock premium features.</p>
+              <div class="field-group">
+                <label class="field-label">Email</label>
+                <input type="email" class="field-input" id="accountAuthEmail" placeholder="you@example.com" />
+              </div>
+              <div class="field-group">
+                <label class="field-label">Password</label>
+                <div style="position:relative;">
+                  <input type="password" class="field-input" id="accountAuthPassword" placeholder="••••••••" style="width:100%;padding-right:40px;" />
+                  <button type="button" id="togglePasswordAccount" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;color:#64748B;" aria-label="Toggle password visibility">
+                    <svg id="eyeIconAccount" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div id="accountAuthError" class="auth-error hidden"></div>
+              <div style="display:flex;gap:10px;margin-bottom:16px;">
+                <button class="btn-primary" style="flex:1;" id="accountSignInBtn">Sign in</button>
+                <button class="btn-secondary" style="flex:1;" id="accountSignUpBtn">Sign up</button>
+              </div>
+              <div class="auth-divider">or</div>
+              <button class="btn-google" id="accountGoogleBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M23.745 12.27c0-.79-.07-1.54-.19-2.27h-11.3v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"/>
+                  <path fill="#34A853" d="M12.255 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96h-3.98v3.09C3.515 21.3 7.615 24 12.255 24z"/>
+                  <path fill="#FBBC05" d="M5.525 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62h-3.98a11.86 11.86 0 0 0 0 10.76l3.98-3.09z"/>
+                  <path fill="#EA4335" d="M12.255 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C18.205 1.19 15.495 0 12.255 0c-4.64 0-8.74 2.7-10.71 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z"/>
+                </svg>
+                Continue with Google
+              </button>
+            </div>
+          </div>
+
+          <!-- SIGNED IN -->
+          <div id="accountSignedIn" class="hidden">
+            <div class="section-card">
+              <div id="planBadge" class="plan-badge free">Free Plan</div>
+              <p id="accountEmailDisplay" class="account-email"></p>
+              <div id="premiumUpgradeRow" class="hidden">
+                <p class="upgrade-desc">Unlock unlimited logging, AI doctor reports, prescription scanning, caregiver mode and more.</p>
+                <div class="plan-options">
+                  <label class="plan-option" id="planMonthly">
+                    <input type="radio" name="plan" value="monthly" checked />
+                    <div class="plan-option-content">
+                      <span class="plan-option-title">Monthly</span>
+                      <span class="plan-option-price">$4.99/mo</span>
+                    </div>
+                  </label>
+                  <label class="plan-option" id="planYearly">
+                    <input type="radio" name="plan" value="yearly" />
+                    <div class="plan-option-content">
+                      <span class="plan-option-title">Yearly</span>
+                      <span class="plan-option-price">$39.99/yr <span class="plan-save">Save 33%</span></span>
+                    </div>
+                  </label>
+                </div>
+                <p class="trial-notice">🎉 7-day free trial — you'll receive a reminder email before you're charged.</p>
+                <button class="btn-primary" style="width:100%;" id="checkoutBtn">Start Free Trial</button>
+              </div>
+              <div id="premiumActiveRow" class="hidden">
+                <p class="premium-active">✅ Premium Active</p>
+                <p id="expiryLabel" class="expiry-label"></p>
+              </div>
+            </div>
+            <div class="section-card">
+              <div class="section-card-title" style="margin-bottom:12px;">Settings</div>
+              <button class="settings-row" id="exportPdfBtn">📄 Export PDF Report</button>
+              <button class="settings-row" id="exportCsvBtn">📊 Export CSV Data</button>
+              <button class="settings-row" id="caregiverBtn">👨‍👩‍👧 Caregiver Mode</button>
+              <button class="settings-row" id="privacyBtn">🔒 Privacy Policy</button>
+              <button class="settings-row danger" id="deleteAccountBtn">🗑️ Delete My Account</button>
+              <button class="btn-secondary" style="width:100%;margin-top:16px;" id="signOutBtn">Sign Out</button>
+            </div>
+            <div class="section-card" style="text-align:center;">
+              <p class="footer-note">Your health data is never sold or shared. No ads. Ever.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav class="bottom-nav" id="bottomNav">
+      <button class="nav-btn active" data-tab="Today">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">Today</span>
+      </button>
+      <button class="nav-btn" data-tab="Medications">
+        <span class="nav-icon">💊</span>
+        <span class="nav-label">Medications</span>
+      </button>
+      <button class="nav-btn" data-tab="History">
+        <span class="nav-icon">📅</span>
+        <span class="nav-label">History</span>
+      </button>
+      <button class="nav-btn" data-tab="Doctor">
+        <span class="nav-icon">🩺</span>
+        <span class="nav-label">Doctor</span>
+      </button>
+      <button class="nav-btn" data-tab="Account">
+        <span class="nav-icon">👤</span>
+        <span class="nav-label">Account</span>
+      </button>
+    </nav>
+<!-- ── MODALS ── -->
+
+    <!-- ADD MEDICATION MODAL -->
+    <div id="addMedModal" class="modal-overlay hidden">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">Add Medication</h3>
+          <button class="modal-close" id="closeMedModalBtn">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="field-group">
+            <label class="field-label">Medication Name *</label>
+            <input type="text" class="field-input" id="medName" placeholder="e.g. Metformin" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Dose</label>
+            <input type="text" class="field-input" id="medDose" placeholder="e.g. 500mg" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Frequency</label>
+            <select class="field-input" id="medFrequency">
+              <option value="">Select frequency</option>
+              <option value="once_daily">Once daily</option>
+              <option value="twice_daily">Twice daily</option>
+              <option value="three_times_daily">Three times daily</option>
+              <option value="every_other_day">Every other day</option>
+              <option value="weekly">Weekly</option>
+              <option value="as_needed">As needed</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Prescriber</label>
+            <input type="text" class="field-input" id="medPrescriber" placeholder="e.g. Dr. Smith" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Pharmacy</label>
+            <input type="text" class="field-input" id="medPharmacy" placeholder="e.g. CVS Pharmacy" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Notes</label>
+            <textarea class="field-input" id="medNotes" placeholder="Any additional notes..." rows="3"></textarea>
+          </div>
+          <div id="medError" class="auth-error hidden"></div>
+          <button class="btn-primary" style="width:100%;" id="saveMedBtn">Save Medication</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOG SYMPTOM MODAL -->
+    <div id="addSymptomModal" class="modal-overlay hidden">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">Log Symptom</h3>
+          <button class="modal-close" id="closeSymptomModalBtn">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="field-group">
+            <label class="field-label">Symptom *</label>
+            <input type="text" class="field-input" id="symptomName" placeholder="e.g. Headache, Fatigue, Nausea" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Severity (1-10)</label>
+            <input type="range" id="symptomSeverity" min="1" max="10" value="5" class="severity-slider" />
+            <div class="severity-labels">
+              <span>Mild (1)</span>
+              <span id="severityValue">5</span>
+              <span>Severe (10)</span>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Notes</label>
+            <textarea class="field-input" id="symptomNotes" placeholder="Any additional details..." rows="3"></textarea>
+          </div>
+          <div id="symptomError" class="auth-error hidden"></div>
+          <button class="btn-primary" style="width:100%;" id="saveSymptomBtn">Save Symptom</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOG VITALS MODAL -->
+    <div id="addVitalsModal" class="modal-overlay hidden">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">Log Vitals</h3>
+          <button class="modal-close" id="closeVitalsModalBtn">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="field-group">
+            <label class="field-label">Blood Pressure</label>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="number" class="field-input" id="bpSystolic" placeholder="120" style="flex:1;" />
+              <span style="color:#64748B;font-size:18px;">/</span>
+              <input type="number" class="field-input" id="bpDiastolic" placeholder="80" style="flex:1;" />
+            </div>
+            <span class="field-hint">Systolic / Diastolic (mmHg)</span>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Heart Rate</label>
+            <input type="number" class="field-input" id="heartRate" placeholder="72" />
+            <span class="field-hint">Beats per minute</span>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Blood Glucose</label>
+            <input type="number" class="field-input" id="bloodGlucose" placeholder="100" />
+            <span class="field-hint">mg/dL</span>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Weight</label>
+            <input type="number" class="field-input" id="weight" placeholder="150" />
+            <span class="field-hint">lbs</span>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Notes</label>
+            <textarea class="field-input" id="vitalsNotes" placeholder="Any additional notes..." rows="2"></textarea>
+          </div>
+          <div id="vitalsError" class="auth-error hidden"></div>
+          <button class="btn-primary" style="width:100%;" id="saveVitalsBtn">Save Vitals</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD DOCTOR MODAL -->
+    <div id="addDoctorModal" class="modal-overlay hidden">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">Add Doctor</h3>
+          <button class="modal-close" id="closeDoctorModalBtn">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="field-group">
+            <label class="field-label">Doctor Name *</label>
+            <input type="text" class="field-input" id="doctorName" placeholder="e.g. Dr. Sarah Smith" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Specialty</label>
+            <input type="text" class="field-input" id="doctorSpecialty" placeholder="e.g. Cardiologist" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Phone</label>
+            <input type="tel" class="field-input" id="doctorPhone" placeholder="e.g. (555) 123-4567" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Address</label>
+            <input type="text" class="field-input" id="doctorAddress" placeholder="e.g. 123 Medical Drive" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Notes</label>
+            <textarea class="field-input" id="doctorNotes" placeholder="Any additional notes..." rows="2"></textarea>
+          </div>
+          <div id="doctorError" class="auth-error hidden"></div>
+          <button class="btn-primary" style="width:100%;" id="saveDoctorBtn">Save Doctor</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD APPOINTMENT MODAL -->
+    <div id="addAppointmentModal" class="modal-overlay hidden">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">Add Appointment</h3>
+          <button class="modal-close" id="closeAppointmentModalBtn">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="field-group">
+            <label class="field-label">Doctor Name *</label>
+            <input type="text" class="field-input" id="appointmentDoctor" placeholder="e.g. Dr. Sarah Smith" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Date & Time *</label>
+            <input type="datetime-local" class="field-input" id="appointmentDateTime" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Location</label>
+            <input type="text" class="field-input" id="appointmentLocation" placeholder="e.g. City Medical Center" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Notes</label>
+            <textarea class="field-input" id="appointmentNotes" placeholder="What to discuss, questions to ask..." rows="3"></textarea>
+          </div>
+          <div id="appointmentError" class="auth-error hidden"></div>
+          <button class="btn-primary" style="width:100%;" id="saveAppointmentBtn">Save Appointment</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DOCTOR REPORT MODAL -->
+    <div id="reportModal" class="modal-overlay hidden">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">AI Doctor Report</h3>
+          <button class="modal-close" id="closeReportModalBtn">✕</button>
+        </div>
+        <div class="modal-body">
+          <p class="section-card-desc">Select the time period for your report:</p>
+          <div class="field-group">
+            <select class="field-input" id="reportPeriod">
+              <option value="7">Last 7 days</option>
+              <option value="14">Last 14 days</option>
+              <option value="30" selected>Last 30 days</option>
+              <option value="90">Last 90 days</option>
+            </select>
+          </div>
+          <button class="btn-primary" style="width:100%;margin-bottom:12px;" id="generateReportConfirmBtn">
+            <span id="reportBtnText">Generate AI Report</span>
+            <span id="reportSpinner" class="hidden">Generating...</span>
+          </button>
+          <div id="reportOutput" class="report-output hidden"></div>
+          <div style="display:flex;gap:8px;margin-top:12px;" id="reportExportBtns" class="hidden">
+            <button class="btn-secondary" style="flex:1;" id="exportReportPdfBtn">📄 Save as PDF</button>
+            <button class="btn-secondary" style="flex:1;" id="exportReportEmailBtn">📧 Email Report</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PREMIUM REQUIRED MODAL -->
+    <div id="premiumModal" class="modal-overlay hidden">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">Premium Feature</h3>
+          <button class="modal-close" id="closePremiumModalBtn">✕</button>
+        </div>
+        <div class="modal-body" style="text-align:center;">
+          <div style="font-size:48px;margin-bottom:16px;">⭐</div>
+          <h4 id="premiumModalTitle" style="margin-bottom:8px;color:#1E3A5F;">Upgrade to Premium</h4>
+          <p id="premiumModalDesc" class="section-card-desc">This feature requires a premium subscription.</p>
+          <p class="trial-notice">🎉 Start with a 7-day free trial — reminder email sent before you're charged.</p>
+          <button class="btn-primary" style="width:100%;margin-top:12px;" id="premiumModalUpgradeBtn">Start Free Trial →</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end #app -->
+
+  <!-- Scripts -->
+  <script src="supabase.js"></script>
+  <script src="script.js"></script>
+
+</body>
+</html>
