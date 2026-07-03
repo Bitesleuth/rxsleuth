@@ -9,3 +9,17 @@
   from = "/*"
   to = "/index.html"
   status = 200
+[build]
+  publish = "."
+  functions = "Netlify/functions"
+
+[build.environment]
+  SECRETS_SCAN_ENABLED = "false"
+
+[functions]
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
