@@ -1,5 +1,4 @@
 [build]
-  base = "www"
   publish = "www"
   functions = "www/netlify/functions"
 
