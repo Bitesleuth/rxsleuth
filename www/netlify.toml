@@ -2,19 +2,8 @@
   publish = "."
   functions = "Netlify/functions"
 
-[functions]
-  node_bundler = "esbuild"
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-[build]
-  publish = "."
-  functions = "Netlify/functions"
-
 [build.environment]
-  SECRETS_SCAN_ENABLED = "false"
+  SECRETS_SCAN_OMIT_KEYS = "sb_publishable"
 
 [functions]
   node_bundler = "esbuild"
