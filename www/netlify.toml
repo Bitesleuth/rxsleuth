@@ -2,9 +2,6 @@
   publish = "."
   functions = "Netlify/functions"
 
-[build.environment]
-  SECRETS_SCAN_OMIT_KEYS = "sb_publishable"
-
 [functions]
   node_bundler = "esbuild"
 
