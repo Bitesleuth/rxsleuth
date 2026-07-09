@@ -2,8 +2,8 @@
 'use strict';
 
 // ── CONSTANTS ──────────────────────────────────────────────
-const STRIPE_MONTHLY_PRICE = 'price_1TpWrpPNMPeYinipHmV5Lghx';
-const STRIPE_YEARLY_PRICE  = 'price_1TpWtZPNMPeYinipm5Gigbee';
+const STRIPE_MONTHLY_PRICE = 'price_1TopihPNMPeYinipfStHPLFb';
+const STRIPE_YEARLY_PRICE  = 'price_1ToppWPNMPeYinipzSYfcUWE';
 const FREE_MED_LIMIT       = 5;
 const FREE_SYMPTOM_LIMIT   = 3;
 const FREE_VITALS_LIMIT    = 1;
