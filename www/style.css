@@ -1034,3 +1034,37 @@ select.field-input {
     box-shadow: var(--shadow-md);
   }
 }
+
+/* ── BITESLEUTH CROSS-PROMO BANNER ─────────────── */
+.bitesleuth-promo {
+  background: linear-gradient(135deg, #1E3A5F 0%, #2C5282 100%);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin: 16px 16px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  text-decoration: none;
+}
+.bitesleuth-promo:hover { opacity: 0.92; }
+.bitesleuth-promo-text { flex: 1; }
+.bitesleuth-promo-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 3px;
+}
+.bitesleuth-promo-title span { color: #F97066; }
+.bitesleuth-promo-desc {
+  font-size: 13px;
+  color: rgba(255,255,255,0.85);
+  line-height: 1.4;
+}
+.bitesleuth-promo-arrow {
+  font-size: 20px;
+  color: #F97066;
+  flex-shrink: 0;
+}
